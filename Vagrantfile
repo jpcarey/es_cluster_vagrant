@@ -33,7 +33,7 @@ Vagrant.configure(2) do |config|
 
           # unset this when not testing commands
           # ansible.tags="test2"
-          ansible.verbose = true
+          # ansible.verbose = true
         end
       end
     end
