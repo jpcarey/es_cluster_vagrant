@@ -1,41 +1,41 @@
 ---
 # CA setup
-- file: path={{ role_path }}/tmp/ca state=directory
-- file: path={{ role_path }}/tmp/ca/certs state=directory
-- file: path={{ role_path }}/tmp/ca/crl state=directory
-- file: path={{ role_path }}/tmp/ca/csr state=directory
-- file: path={{ role_path }}/tmp/ca/newcerts state=directory
-- file: path={{ role_path }}/tmp/ca/private state=directory
-- file: path={{ role_path }}/tmp/ca/index.txt state=touch
-- copy: content="1000" dest="{{ role_path }}/tmp/ca/serial"
+# - file: path={{ playbook_dir }}/certs/ca state=directory
+- file: path={{ playbook_dir }}/{{ item }} state=directory
+  with_items:
+    - certs/ca/certs
+    - certs/ca/crl
+    - certs/ca/csr
+    - certs/ca/newcerts
+    - certs/ca/private
+
+- file: path={{ playbook_dir }}/certs/ca/index.txt state=touch
+- copy: content="1000" dest="{{ playbook_dir }}/certs/ca/serial"
 
 - name: OpenSSL | Generate openssl CA config file
-  template: src=templates/openssl-ca.cnf.j2 dest={{ role_path }}/tmp/ca/openssl-ca.cnf
+  template: src=templates/openssl-ca.cnf.j2 dest={{ playbook_dir }}/certs/ca/openssl-ca.cnf
 
 - name: OpenSSL | Create CA root key
-  command: 'openssl genrsa -aes256 -passout pass:{{ ca_password }} -out private/ca.key.pem 4096'
+  command: 'openssl genrsa -aes256 -passout pass:{{ CA_password }} -out private/ca.key.pem 4096'
   args:
-    chdir: '{{ role_path }}/tmp/ca'
-    creates: '{{ role_path }}/tmp/ca/private/ca.key.pem'
-
-# - file: path={{ role_path }}/tmp/ca/private/ca.key.pem mode=0400
-#   tags: test
+    chdir: '{{ playbook_dir }}/certs/ca'
+    creates: '{{ playbook_dir }}/certs/ca/private/ca.key.pem'
 
 - name: OpenSSL | Create CA root cert
-  command: 'openssl req -config openssl-ca.cnf -new -passin pass:{{ ca_password }} \
-    -subj "/C=US/ST=Colorado/L=Golden/O=Carey Ltd/OU=Support Team/CN=Carey Ltd Root CA" \
-    -x509 -days 7300 -sha256 -extensions v3_ca -key private/ca.key.pem -out certs/ca.cert.pem'
+  command: 'openssl req -config openssl-ca.cnf -new -passin pass:{{ CA_password }} \
+    -subj "{{ CA_CN }}" -x509 -days 7300 -sha256 -extensions v3_ca -key private/ca.key.pem \
+    -out certs/ca.cert.pem'
   args:
-    chdir: '{{ role_path }}/tmp/ca'
-    creates: '{{ role_path }}/tmp/ca/certs/ca.cert.pem'
+    chdir: '{{ playbook_dir }}/certs/ca'
+    creates: '{{ playbook_dir }}/certs/ca/certs/ca.cert.pem'
 
 # CA truststore
 - name: Java Keytool | Truststore CA
   command: 'keytool -importcert -noprompt -alias my_ca \
     -keystore truststore.jks  -storepass password -keypass password \
-    -file {{ role_path }}/tmp/ca/certs/ca.cert.pem'
+    -file {{ playbook_dir }}/certs/ca/certs/ca.cert.pem'
   args:
-    chdir: '{{ role_path }}/tmp/keytool'
+    chdir: '{{ playbook_dir }}/certs/keytool'
   register: trust_ca
   changed_when: trust_ca.rc == 0
   ignore_errors: true

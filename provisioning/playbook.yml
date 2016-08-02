@@ -11,12 +11,8 @@
 - hosts: localhost
   connection: local
   gather_facts: false
-  tasks:
-    # - name: Display all variables/facts known for a host
-    #   debug: var=hostvars[inventory_hostname]
-    - name: get elasticsearch role
-      git: repo=https://github.com/elastic/ansible-elasticsearch.git dest=provisioning/roles/elasticsearch
   roles:
+    - fetch-es-ansible-role
     - ca_authority
 
 ### setup elasticsearch nodes
@@ -26,14 +22,12 @@
   pre_tasks:
     - name: /etc shield directory
       file: path=/etc/elasticsearch/{{ ansible_nodename }}/shield state=directory
-      tags: test
 
     - name: copy keystore & truststore
-      copy: src={{playbook_dir}}/roles/ca_authority/tmp/keytool/{{ item }} dest=/etc/elasticsearch/{{ ansible_nodename }}/shield/{{ item }}
+      copy: src=certs/keytool/{{ item }} dest=/etc/elasticsearch/{{ ansible_nodename }}/shield/{{ item }}
       with_items:
         - "{{ ansible_nodename }}.jks"
         - "truststore.jks"
-      tags: test
   tasks:
   roles:
     - { role: elasticsearch,
@@ -41,7 +35,7 @@
         node.name: "${HOSTNAME}",
         cluster.name: "custom-cluster",
         network.host: [ "_local_", "_site_" ],
-        discovery.zen.ping.unicast.hosts: "10.0.0.11, 10.0.0.12, 10.0.0.13",
+        discovery.zen.ping.unicast.hosts: '{{ discovery }}',
         shield.ssl.keystore.path: '/etc/elasticsearch/{{ ansible_nodename }}/shield/{{ ansible_nodename }}.jks',
         shield.ssl.keystore.password: password,
         shield.ssl.truststore.path: '/etc/elasticsearch/{{ ansible_nodename }}/shield/truststore.jks',

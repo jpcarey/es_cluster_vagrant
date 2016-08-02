@@ -2,17 +2,22 @@ Vagrant.configure(2) do |config|
   config.vm.box = "ubuntu/trusty64"
 
   host_vars = {}
-  groups = {"elasticsearch" => [] }
+  groups = {"elasticsearch" => [],  "elasticsearch:vars" => {"discovery" => []}}
 
   N = 3
   (1..N).each do |machine_id|
     config.vm.define "node#{machine_id}" do |machine|
+
+      private_ip = "10.0.0.1#{machine_id}"
+
       machine.vm.hostname = "node#{machine_id}"
-      machine.vm.network "private_network", ip: "10.0.0.1#{machine_id}"
+      machine.vm.network "private_network", ip: private_ip
       machine.vm.network "forwarded_port", guest: 9200, host: "920#{machine_id}"
 
       host_vars[ machine.vm.hostname ] = { "es_instance_name" => machine.vm.hostname }
+
       groups["elasticsearch"] << machine.vm.hostname
+      groups["elasticsearch:vars"]["discovery"] << private_ip
 
       # Only execute once the Ansible provisioner,
       # when all the machines are up and ready.
