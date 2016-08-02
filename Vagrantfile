@@ -1,6 +1,8 @@
 Vagrant.configure(2) do |config|
   config.vm.box = "ubuntu/trusty64"
+
   host_vars = {}
+  groups = {"elasticsearch" => [] }
 
   N = 3
   (1..N).each do |machine_id|
@@ -10,6 +12,7 @@ Vagrant.configure(2) do |config|
       machine.vm.network "forwarded_port", guest: 9200, host: "920#{machine_id}"
 
       host_vars[ machine.vm.hostname ] = { "es_instance_name" => machine.vm.hostname }
+      groups["elasticsearch"] << machine.vm.hostname
 
       # Only execute once the Ansible provisioner,
       # when all the machines are up and ready.
@@ -17,21 +20,15 @@ Vagrant.configure(2) do |config|
         machine.vm.provision :ansible do |ansible|
           # Disable default limit to connect to all the machines
           puts host_vars
-          ansible.limit = "all"
+          puts groups
+          ansible.limit = "all,localhost"
           ansible.playbook = "provisioning/playbook.yml"
           ansible.host_vars = host_vars
-          # p ansible.host_vars
-          # ansible.host_vars = {
-          #   machine.vm.hostname => { es_instance_name => machine.vm.hostname }
-          # }
-          # ansible.host_vars = {
-          #   "host1" => {"http_port" => 80,
-          #               "maxRequestsPerChild" => 808},
-          #
-          #   "host2" => {"http_port" => 303,
-          #               "maxRequestsPerChild" => 909}
-          # }
-          # ansible.verbose = true
+          ansible.groups = groups
+
+          # unset this when not testing commands
+          # ansible.tags="test2"
+          ansible.verbose = true
         end
       end
     end

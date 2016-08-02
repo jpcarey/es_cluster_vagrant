@@ -1,17 +1,40 @@
 ---
+### get all facts for use in playbooks
 - hosts: all
-  vars:
+  gather_facts: true
   tasks:
-    - name: get elasticsearch role
-      local_action: git repo=https://github.com/elastic/ansible-elasticsearch.git dest=provisioning/roles/elasticsearch
-      run_once: true
+    - name: Create Subject Alternative Name (SAN)
+      set_fact:
+        cert_san: "san=dns:{{ ansible_fqdn }},{% for i in ansible_all_ipv4_addresses -%}ip:{{ i }}{%- if not loop.last %},{% endif -%}{%- endfor %}"
 
-- hosts: all
+### this runs locally to fetch ansible-elasticsearch role, and setup all certs
+- hosts: localhost
+  connection: local
+  gather_facts: false
+  tasks:
+    # - name: Display all variables/facts known for a host
+    #   debug: var=hostvars[inventory_hostname]
+    - name: get elasticsearch role
+      git: repo=https://github.com/elastic/ansible-elasticsearch.git dest=provisioning/roles/elasticsearch
+  roles:
+    - ca_authority
+
+### setup elasticsearch nodes
+- hosts: elasticsearch
   sudo: yes
   vars:
+  pre_tasks:
+    - name: /etc shield directory
+      file: path=/etc/elasticsearch/{{ ansible_nodename }}/shield state=directory
+      tags: test
+
+    - name: copy keystore & truststore
+      copy: src={{playbook_dir}}/roles/ca_authority/tmp/keytool/{{ item }} dest=/etc/elasticsearch/{{ ansible_nodename }}/shield/{{ item }}
+      with_items:
+        - "{{ ansible_nodename }}.jks"
+        - "truststore.jks"
+      tags: test
   tasks:
-    - name: Display all variables/facts known for a host
-      debug: var=hostvars[inventory_hostname]
   roles:
     - { role: elasticsearch,
       es_config: {
@@ -26,9 +49,9 @@
         shield.transport.ssl: true,
         shield.http.ssl: true,
         shield.ssl.hostname_verification.resolve_name: false,
-        shield.ssl.ciphers: [ "TLS_RSA_WITH_AES_128_CBC_SHA256", "TLS_RSA_WITH_AES_128_CBC_SHA" ],
+        # shield.ssl.ciphers: [ "TLS_RSA_WITH_AES_128_CBC_SHA256", "TLS_RSA_WITH_AES_128_CBC_SHA" ],
         shield.audit.enabled: true,
-        shield.http.ssl.client.auth: required
+        shield.http.ssl.client.auth: optional
       }
     }
   handlers:

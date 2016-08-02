@@ -1,0 +1,7 @@
+---
+- file: path={{ role_path }}/tmp state=directory
+- file: path={{ role_path }}/tmp/keytool state=directory
+
+- include: CA.yml
+- include: Intermediate.yml
+- include: Node_Certs.yml
