@@ -2,6 +2,14 @@
 ### get all facts for use in playbooks
 - hosts: all
   gather_facts: true
+  vars_prompt:
+   - name: "es_admin_password"
+     prompt: "Enter a password for the es_admin"
+     private: yes
+     encrypt: "bcrypt"
+    #  confirm: yes
+     salt_size: 4
+
   tasks:
     - name: Create Subject Alternative Name (SAN)
       set_fact:
@@ -28,6 +36,20 @@
       with_items:
         - "{{ ansible_nodename }}.jks"
         - "truststore.jks"
+    - name: copy default user & role
+    # This should be removed at some point, need to find a decent workaround.
+    # the ansible-elasticsearch role does not properly support shield,
+    # and the custom directory installation complicates the ${es_home}/bin/esusers
+      copy: src=_tmp/{{ item }} dest=/etc/elasticsearch/{{ ansible_nodename }}/shield/{{ item }}
+      with_items:
+        - users
+        - users_roles
+      # Not prompting as we are not in interactive mode & passlib must be installed to encrypt vars_prompt values. blah
+      # template: src=roles/fetch-es-ansible-role/template/{{ item }} dest=/etc/elasticsearch/{{ ansible_nodename }}/shield/{{ item }}
+      # with_items:
+      #   - users
+      #   - users_roles
+
   tasks:
   roles:
     - { role: elasticsearch,

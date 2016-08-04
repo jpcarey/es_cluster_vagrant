@@ -12,6 +12,11 @@ The goal is to provision a fully working elasticsearch cluster with encryption. 
 - vagrant up
 
 ## Other stuff
+- hardcoded `es_admin` password to `password` for now. :(
+- check that everything is working with the following command (node1 = 9201, node2 = 9202, ..)
+    ```
+    $ curl -v -k -u es_admin:password 'https://localhost:9201/_cat/nodes'
+    ```
 - You can re-provision an already running cluster. Modify the ansible playbook, and run `vagrant provision`
 - You can suspend a cluster, `vagrant suspend`
 - The certs are idempotent, and not recreated. Delete the `certs` directory inside of `provisioning` in order to get new certs.

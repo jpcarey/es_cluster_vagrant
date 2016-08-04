@@ -32,7 +32,7 @@ Vagrant.configure(2) do |config|
           ansible.groups = groups
 
           # unset this when not testing commands
-          # ansible.tags="test2"
+          # ansible.tags="test"
           # ansible.verbose = true
         end
       end
