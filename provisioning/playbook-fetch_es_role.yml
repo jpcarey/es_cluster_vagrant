@@ -4,4 +4,4 @@
   gather_facts: false
   tasks:
     - name: get elasticsearch role
-      git: repo=https://github.com/elastic/ansible-elasticsearch.git dest=provisioning/roles/elasticsearch version=0.1.2
+      git: repo=https://github.com/elastic/ansible-elasticsearch.git dest={{playbook_dir}}/roles/elasticsearch version=0.1.2
