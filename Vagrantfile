@@ -1,4 +1,26 @@
 Vagrant.configure(2) do |config|
+
+  # https://atlas.hashicorp.com/elastic
+      # elastic/centos-6-x86_64
+      # elastic/opensuse-13-x86_64
+      # elastic/fedora-23-x86_64
+      # elastic/fedora-24-x86_64
+      # elastic/ubuntu-16.04-x86_64
+      # elastic/oraclelinux-7-x86_64
+      # elastic/oraclelinux-6-x86_64
+      # elastic/sles-12-x86_64
+      # elastic/ubuntu-15.10-x86_64
+      # elastic/sles-11-x86_64
+      # elastic/fedora-21-x86_64
+      # elastic/fedora-22-x86_64
+      # elastic/oel-7-x86_64
+      # elastic/oel-6-x86_64
+      # elastic/debian-7-x86_64
+      # elastic/debian-8-x86_64
+      # elastic/centos-7-x86_64
+      # elastic/ubuntu-15.04-x86_64
+      # elastic/ubuntu-14.04-x86_64
+      # elastic/ubuntu-12.04-x86_64
   config.vm.box = "ubuntu/trusty64"
 
   # fetch the elasticsearch role from github for use in the provisioning/playbook.yml
