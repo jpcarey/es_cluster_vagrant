@@ -1,0 +1,7 @@
+---
+- hosts: localhost
+  connection: local
+  gather_facts: false
+  tasks:
+    - name: get elasticsearch role
+      git: repo=https://github.com/elastic/ansible-elasticsearch.git dest=provisioning/roles/elasticsearch

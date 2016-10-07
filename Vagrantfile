@@ -1,6 +1,12 @@
 Vagrant.configure(2) do |config|
   config.vm.box = "ubuntu/trusty64"
 
+  # fetch the elasticsearch role from github for use in the provisioning/playbook.yml
+  config.vm.provision "ansible" do |ansible|
+    ansible.limit = "all,localhost"
+    ansible.playbook = "provisioning/playbook-fetch_es_role.yml"
+  end
+
   host_vars = {}
   groups = {"elasticsearch" => [],  "elasticsearch:vars" => {"discovery" => []}}
 
@@ -21,6 +27,7 @@ Vagrant.configure(2) do |config|
 
       # Only execute once the Ansible provisioner,
       # when all the machines are up and ready.
+
       if machine_id == N
         machine.vm.provision :ansible do |ansible|
           # Disable default limit to connect to all the machines

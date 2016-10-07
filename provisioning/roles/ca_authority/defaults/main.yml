@@ -1,5 +1,5 @@
 ---
-CA_CN: '/C=US/ST=Colorado/L=Golden/O=Carey Ltd/OU=Support Team/CN=Carey Ltd Intermediate CA'
+CA_CN: '/C=US/ST=Colorado/L=Golden/O=Carey Ltd/OU=Support Team/CN=Carey Ltd Root CA'
 CA_password: CA_password.1234
 
 INTR_CN: '/C=US/ST=Colorado/L=Golden/O=Carey Ltd/OU=Support Team/CN=Carey Ltd Intermediate CA'
