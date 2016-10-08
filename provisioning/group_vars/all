@@ -1,5 +1,5 @@
 es_major_version: 2.x
-es_version: 2.3.4
+es_version: 2.4.1
 es_plugins_reinstall: true
 es_plugins:
   - plugin: license
